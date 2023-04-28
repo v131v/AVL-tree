@@ -8,6 +8,18 @@
 
 using namespace std;
 
+string keyToStr(int x) {
+	return to_string(x);
+}
+
+string keyToStr(Fullname x) {
+	return x.toString();
+}
+
+string valToStr(Student* st) {
+	return to_string(st->id);
+}
+
 template<class K, class V>
 class Node {
 public:
@@ -88,7 +100,7 @@ public:
 	}
 
 	void print() {
-		cout << key << ' ' << value << '\n'; 
+		cout << keyToStr(key) << ' ' << value->toString() << '\n'; 
 	}
 
 private:
@@ -186,6 +198,10 @@ public:
 	}
 
 	void print() {
+		if (root == nullptr) {
+			return;
+		}
+
 		queue<Node<K,V>*> q;
 		q.push(root);
 
@@ -207,27 +223,6 @@ public:
 };
 
 int main() {
-	/* AVL<int, char> tree([](int a, int b) -> bool {
-		return a < b;
-	});
-
-	vector<int> v = {1,2,3,4,6,6,6};
-	string c = "abcdefgh";
-
-	for (int i = 0; i < v.size(); i++) {
-		tree.push(v[i], c[i]);
-		tree.print();
-	}
-
-	for (int i = 0; i < v.size(); i++) {
-		auto ans = tree.find(i+1);
-
-		for (int j = 0; j < ans.size(); j++) {
-			cout << ans[j] << ' ';
-		}
-		cout << '\n';
-	} */
-
 	Generator gen("db/names.txt", "db/lastnames.txt", "db/universities.txt", "db/faculties.txt");
 
 	int n;
@@ -237,23 +232,23 @@ int main() {
 	AVL<int, Student*> idIndex([](int a, int b) -> bool {
 		return a < b;
 	});
-	AVL<Fullname*, Student*> fullnameIndex([](Fullname* a, Fullname* b) -> bool {
-		return (*a).toString() < (*b).toString();
+	AVL<Fullname, Student*> fullnameIndex([](Fullname a, Fullname b) -> bool {
+		if (a.lastname == b.lastname) {
+			return a.name < b.name;
+		}
+		return a.lastname < b.lastname;
 	});
 
 	cout << "Full db:\n";
-	vector<Student> stdb;
+	Student stdb[n];
 	for (int i = 0; i < n; i++) {
 		Student st = gen.getStudent();
-		stdb.push_back(st);
+		stdb[i] = (st);
 		idIndex.push(st.id, &(stdb[i]));
-		fullnameIndex.push(&(stdb[i].fullname), &(stdb[i]));
+		fullnameIndex.push(st.fullname, &(stdb[i]));
 		cout << st.toString() << '\n';
 	}
 	cout << '\n';
-
-	idIndex.print();
-	fullnameIndex.print();
 
 	int k;
 	cout << "Enter queries count:\n";
@@ -274,9 +269,9 @@ int main() {
 		} else {
 			string name, lastname;
 			cin >> name >> lastname;
-			Fullname* key = new Fullname();
-			key->name = name;
-			key->lastname = lastname;
+			Fullname key;
+			key.name = name;
+			key.lastname = lastname;
 			ans = fullnameIndex.find(key);
 		}
 
