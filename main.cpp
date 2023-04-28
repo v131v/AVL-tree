@@ -4,6 +4,8 @@
 #include <string>
 #include <functional>
 
+#include "student.cpp"
+
 using namespace std;
 
 template<class K, class V>
@@ -205,7 +207,7 @@ public:
 };
 
 int main() {
-	AVL<int, char> tree([](int a, int b) -> bool {
+	/* AVL<int, char> tree([](int a, int b) -> bool {
 		return a < b;
 	});
 
@@ -224,10 +226,64 @@ int main() {
 			cout << ans[j] << ' ';
 		}
 		cout << '\n';
-	}
+	} */
 
-	char end;
-	cin >> end;
+	Generator gen("db/names.txt", "db/lastnames.txt", "db/universities.txt", "db/faculties.txt");
+
+	int n;
+	cout << "Enter db size:\n";
+	cin >> n;
+
+	AVL<int, Student*> idIndex([](int a, int b) -> bool {
+		return a < b;
+	});
+	AVL<Fullname*, Student*> fullnameIndex([](Fullname* a, Fullname* b) -> bool {
+		return (*a).toString() < (*b).toString();
+	});
+
+	cout << "Full db:\n";
+	vector<Student> stdb;
+	for (int i = 0; i < n; i++) {
+		Student st = gen.getStudent();
+		stdb.push_back(st);
+		idIndex.push(st.id, &(stdb[i]));
+		fullnameIndex.push(&(stdb[i].fullname), &(stdb[i]));
+		cout << st.toString() << '\n';
+	}
+	cout << '\n';
+
+	idIndex.print();
+	fullnameIndex.print();
+
+	int k;
+	cout << "Enter queries count:\n";
+	cin >> k;
+	cout << "Write queries in one of these formats (without brackets):\n";
+	cout << "\"id {studentID}\"\n";
+	cout << "\"name {name} {lastname}\"\n";
+
+	for (int i = 0; i < k; i++) {
+		string type;
+		vector<Student*> ans;
+		cin >> type;
+
+		if (type == "id") {
+			int id;
+			cin >> id;
+			ans = idIndex.find(id);
+		} else {
+			string name, lastname;
+			cin >> name >> lastname;
+			Fullname* key = new Fullname();
+			key->name = name;
+			key->lastname = lastname;
+			ans = fullnameIndex.find(key);
+		}
+
+		for (auto st : ans) {
+			cout << st->toString() << '\n';
+		}
+	}
 
 	return 0;
 }
