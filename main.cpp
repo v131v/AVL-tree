@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <queue>
 #include <string>
@@ -29,7 +30,7 @@ public:
 	Node<K,V>* right;
 	int leftLen, rightLen;
 	function<bool(K,K)> isLess;
-	
+
 	Node(K k, V v, function<bool(K,K)> cmp) {
 		key = k;
 		value = v;
@@ -100,7 +101,7 @@ public:
 	}
 
 	void print() {
-		cout << keyToStr(key) << ' ' << value->toString() << '\n'; 
+		cout << keyToStr(key) << ' ' << value->toString() << '\n';
 	}
 
 private:
@@ -122,7 +123,7 @@ private:
 				return;
 			}
 
-			left->rotateRight();
+			right->rotateRight();
 			rotateLeft();
 			return;
 		}
@@ -143,7 +144,7 @@ private:
 	void rotateRight() {
 		swap(key, left->key);
 		swap(value, left->value);
-		auto r = right;
+		Node<K,V>* r = right;
 		right = left;
 		left = right->left;
 		right->left = right->right;
@@ -158,7 +159,7 @@ private:
 		} else {
 			leftLen = max(left->leftLen, left->rightLen)+1;
 		}
-		
+
 		if (right == nullptr) {
 			rightLen = 0;
 		} else {
@@ -179,7 +180,7 @@ public:
 	}
 
 	void push(K key, V val) {
-		auto nd = new Node<K,V>(key, val, isLess);
+		Node<K,V>* nd = new Node<K,V>(key, val, isLess);
 
 		if (root == nullptr) {
 			root = nd;
@@ -239,14 +240,25 @@ int main() {
 		return a.lastname < b.lastname;
 	});
 
-	cout << "Full db:\n";
+	bool writeDB = false;
+	string writeDBchar;
+	cout << "Write full db? [y/n]:\n";
+	cin >> writeDBchar;
+	if (writeDBchar == "y") writeDB = true;
+
+	if (writeDB) {
+		cout << "Full db:\n";
+	}
+
 	Student stdb[n];
 	for (int i = 0; i < n; i++) {
 		Student st = gen.getStudent();
-		stdb[i] = (st);
+		if (writeDB) {
+			cout << st.toString() << '\n';
+		}
+		stdb[i] = st;
 		idIndex.push(st.id, &(stdb[i]));
 		fullnameIndex.push(st.fullname, &(stdb[i]));
-		cout << st.toString() << '\n';
 	}
 	cout << '\n';
 
